@@ -1,21 +1,38 @@
-import java.net.*;            
-import java.io.InputStream;
-import java.io.DataInputStream;
- 
-public class WishesServer
-{
-   public static void main(String args[]) throws Exception
-   {
-     ServerSocket sersock = new ServerSocket(5000); 
-     System.out.println("server is ready");  //  message to know the server is running
- 
-     Socket sock = sersock.accept();               
-                                                                                          
-     InputStream istream = sock.getInputStream();  
-     DataInputStream dstream = new DataInputStream(istream);
- 
-     String message2 = dstream.readLine();
-     System.out.println(message2);
-     dstream .close(); istream.close(); sock.close(); sersock.close();
+import java.net.*;
+import java.io.*;
+
+public class ServerSideSocket { 
+  public void run() {
+	try {
+		int serverPort = 4020;
+		ServerSocket serverSocket = new ServerSocket(serverPort);
+		serverSocket.setSoTimeout(10000); 
+		while(true) {
+			System.out.println("Waiting for client on port " + serverSocket.getLocalPort() + "..."); 
+
+			Socket server = serverSocket.accept();
+			System.out.println("Just connected to " + server.getRemoteSocketAddress()); 
+
+			PrintWriter toClient = 
+				new PrintWriter(server.getOutputStream(),true);
+			BufferedReader fromClient =
+				new BufferedReader(
+						new InputStreamReader(server.getInputStream()));
+			String line = fromClient.readLine();
+			System.out.println("Server received: " + line); 
+			toClient.println("Thank you for connecting to " + server.getLocalSocketAddress() + "\nGoodbye!"); 
+		}
+	}
+	catch(UnknownHostException ex) {
+		ex.printStackTrace();
+	}
+	catch(IOException e){
+		e.printStackTrace();
+	}
+  }
+	
+  public static void main(String[] args) {
+		ServerSideSocket srv = new ServerSideSocket();
+		srv.run();
   }
 }
